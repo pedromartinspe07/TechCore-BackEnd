@@ -1,34 +1,32 @@
-// server.js
+
+const mongoose = require('mongoose');
+require('dotenv').config(); // se for usar .env local
+
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+}).then(() => {
+  console.log('✅ MongoDB conectado');
+}).catch((err) => {
+  console.error('Erro ao conectar MongoDB:', err);
+});
+
 const express = require('express');
-const app = express();
 const cors = require('cors');
+const bodyParser = require('body-parser');
 
-app.use(cors()); // permite requisições do GitHub Pages
-app.use(express.json()); // para ler JSON
+const loginRoutes = require('./api/login');
+const noticiasRoutes = require('./api/noticias');
 
-const noticias = []; // Banco de dados temporário
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-app.post('/login', (req, res) => {
-  const { email, senha } = req.body;
+app.use(cors());
+app.use(bodyParser.json());
 
-  if (email === 'admin@site.com' && senha === '1234') {
-    return res.json({ status: 'ok', cargo: 'jornalista' });
-  } else {
-    return res.status(401).json({ status: 'erro', mensagem: 'Credenciais inválidas' });
-  }
-});
+app.use('/api', loginRoutes);
+app.use('/api', noticiasRoutes);
 
-app.post('/publicar', (req, res) => {
-  const { titulo, conteudo } = req.body;
-  noticias.push({ titulo, conteudo, data: new Date().toISOString() });
-  res.json({ status: 'ok', mensagem: 'Notícia publicada com sucesso!' });
-});
-
-app.get('/noticias', (req, res) => {
-  res.json(noticias);
-});
-
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-  console.log(`Servidor rodando na porta ${port}`);
+app.listen(PORT, () => {
+  console.log(`Servidor rodando na porta ${PORT}`);
 });
