@@ -2,9 +2,9 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 
-const Noticia = require('../../models/Noticia');
-const Comentario = require('../../models/Comentario');
-const Resposta = require('../../models/Resposta');
+const Noticia = require('../models/Noticia');
+const Comentario = require('../models/Comentario');
+const Resposta = require('../models/Resposta');
 
 // Utilitário: valida se um ID é um ObjectId válido
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
