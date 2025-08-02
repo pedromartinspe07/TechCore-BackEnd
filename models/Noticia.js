@@ -23,7 +23,7 @@ const NoticiaSchema = new mongoose.Schema({
     type: String,
     trim: true,
     validate: {
-      validator: (v) => /^https?:\/\/.+\.(jpg|jpeg|png|webp|gif)$/i.test(v),
+      validator: (v) => !v || /^https?:\/\/.+\.(jpg|jpeg|png|webp|gif)$/i.test(v),
       message: 'A URL da imagem de capa deve ser válida e terminar com uma extensão de imagem'
     }
   },
@@ -41,6 +41,7 @@ const NoticiaSchema = new mongoose.Schema({
   timestamps: true // createdAt e updatedAt automáticos
 });
 
-NoticiaSchema.index({ data: -1 }); // Para ordenação eficiente por data
+// Índice para ordenação eficiente por data (campo 'data')
+NoticiaSchema.index({ data: -1 });
 
 module.exports = mongoose.model('Noticia', NoticiaSchema);

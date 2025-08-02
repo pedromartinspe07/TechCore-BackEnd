@@ -13,8 +13,7 @@ const users = [
     createdAt: new Date(),
     updatedAt: new Date(),
     status: 'active',
-    password: '051819pE@', //senha do usuário
-    passwordHash: '$2b$10$3h0dYuCmzpIXnA4Q/EzOYOhYfsnHkaKx8nRPpp3Oa9xCF2aM4F0D2' 
+    passwordHash: '$2b$10$3h0dYuCmzpIXnA4Q/EzOYOhYfsnHkaKx8nRPpp3Oa9xCF2aM4F0D2'
   },
   {
     id: 2,
@@ -24,37 +23,41 @@ const users = [
     createdAt: new Date(),
     updatedAt: new Date(),
     status: 'active',
-    password: '051819pE@', //senha do usuário
-    passwordHash: '$2b$10$3h0dYuCmzpIXnA4Q/EzOYOhYfsnHkaKx8nRPpp3Oa9xCF2aM4F0D2' 
+    passwordHash: '$2b$10$3h0dYuCmzpIXnA4Q/EzOYOhYfsnHkaKx8nRPpp3Oa9xCF2aM4F0D2'
   }
 ];
 
-// Segredo do JWT (deve vir do .env em produção)
-const JWT_SECRET = process.env.JWT_SECRET || '04181818'; //segredo do JWT
+const JWT_SECRET = process.env.JWT_SECRET || '04181818';
 
-router.post('/login', async (req, res) => { //rota para fazer login
-  const { username, password } = req.body; //pega o username e password do body
+router.post('/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
 
-  // Verifica se o usuário existe
-  const user = users.find(u => u.username === username); //busca o usuário no banco de dados
-  if (!user) { //se o usuário não for encontrado, retorna erro 401
-    return res.status(401).json({ message: 'Usuário ou senha inválidos.' }); //retorna mensagem de erro
+    if (!username || !password) {
+      return res.status(400).json({ message: 'Usuário e senha são obrigatórios.' });
+    }
+
+    const user = users.find(u => u.username === username);
+    if (!user) {
+      return res.status(401).json({ message: 'Usuário ou senha inválidos.' });
+    }
+
+    const senhaCorreta = await bcrypt.compare(password, user.passwordHash);
+    if (!senhaCorreta) {
+      return res.status(401).json({ message: 'Usuário ou senha inválidos.' });
+    }
+
+    const token = jwt.sign(
+      { id: user.id, username: user.username, role: user.role },
+      JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    res.json({ token });
+  } catch (error) {
+    console.error('Erro no login:', error);
+    res.status(500).json({ message: 'Erro interno no servidor.' });
   }
-
-  // Verifica se a senha está correta
-  const senhaCorreta = await bcrypt.compare(password, user.passwordHash); //compara a senha com a senha criptografada
-  if (!senhaCorreta) { //se a senha não for correta, retorna erro 401
-    return res.status(401).json({ message: 'Usuário ou senha inválidos.' }); //retorna mensagem de erro
-  }
-
-  // Cria token JWT
-  const token = jwt.sign( //cria o token JWT
-    { id: user.id, username: user.username }, //dados do usuário
-    JWT_SECRET, //segredo do JWT
-    { expiresIn: '1h' } // Token expira em 1 hora
-  );
-
-  res.json({ token }); //retorna o token em formato JSON
 });
 
 module.exports = router;

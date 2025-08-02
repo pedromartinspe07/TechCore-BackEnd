@@ -1,5 +1,3 @@
-// server.js
-
 require('dotenv').config(); // Carrega variáveis de ambiente
 const express = require('express');
 const mongoose = require('mongoose');
@@ -11,11 +9,14 @@ const publicRoutes = require('./api/public');
 
 const app = express();
 
+// Definir a porta (envia primeiro variável de ambiente, senão usa 3000)
+const PORT = process.env.PORT || 3000;
+
 // Middleware global
 app.use(cors());
-app.use(express.json()); // Substitui bodyParser.json() para receber dados de formulários
-app.use(express.urlencoded({ extended: true })); // Substitui bodyParser.urlencoded() para receber dados de formulários
-app.use(express.static('public')); // Serve arquivos estáticos da pasta public
+app.use(express.json()); // Para JSON no body
+app.use(express.urlencoded({ extended: true })); // Para dados urlencoded
+app.use(express.static('public')); // Para arquivos estáticos
 
 // Conexão com MongoDB
 mongoose.connect(process.env.MONGO_URI, {
@@ -44,10 +45,9 @@ app.get('/', (req, res) => {
 app.use((err, req, res, next) => {
   console.error('🔥 Erro interno do servidor:', err);
   res.status(500).json({ message: 'Erro interno do servidor' });
-  console.log('🔥 Erro interno do servidor:', err);
 });
 
 // Inicia o servidor
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando em http://localhost:${process.env.PORT}`);
+  console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
 });
