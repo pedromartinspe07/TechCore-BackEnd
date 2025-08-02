@@ -19,11 +19,18 @@ app.use(express.urlencoded({ extended: true })); // Para dados urlencoded
 app.use(express.static('public')); // Para arquivos estáticos
 
 // Conexão com MongoDB
-mongoose.connect(process.env.MONGO_URI, {
+mongoose.connect(process.env.MONGO_URL, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-  .then(() => console.log('✅ Conectado ao MongoDB com sucesso'))
+  .then(() => {
+    console.log('✅ Conectado ao MongoDB com sucesso');
+
+    // Só inicia o servidor depois da conexão bem-sucedida
+    app.listen(PORT, () => {
+      console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
+    });
+  })
   .catch((err) => {
     console.error('❌ Falha ao conectar ao MongoDB');
     console.error(err);
@@ -45,9 +52,4 @@ app.get('/', (req, res) => {
 app.use((err, req, res, next) => {
   console.error('🔥 Erro interno do servidor:', err);
   res.status(500).json({ message: 'Erro interno do servidor' });
-});
-
-// Inicia o servidor
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
 });
