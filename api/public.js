@@ -1,96 +1,97 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
+
 const Noticia = require('../models/Noticia');
 const Comentario = require('../models/Comentario');
 const Resposta = require('../models/Resposta');
-const mongoose = require('mongoose'); // Para validar ObjectId
 
-// Rota para testar servidor
-router.get('/', (req, res) => {
-  res.send('🌐 API TechCore rodando com sucesso! - Rota pública');
-  console.log('🌐 API TechCore rodando com sucesso! - Rota pública');
-});
+// Utilitário: valida se um ID é um ObjectId válido
+const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
-// Validar ObjectId
-function validarObjectId(id) {
-  return mongoose.Types.ObjectId.isValid(id);
+// Middleware para validar ObjectId em rotas dinâmicas
+function validarId(paramName) {
+  return (req, res, next) => {
+    const id = req.params[paramName];
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ mensagem: `ID de ${paramName} inválido.` });
+    }
+    next();
+  };
 }
 
+// Rota de status da API
+router.get('/', (req, res) => {
+  console.log('🌐 API pública acessada');
+  res.send('🌐 API TechCore rodando com sucesso! - Rota pública');
+});
+
+// Buscar todas as notícias
 router.get('/noticias', async (req, res) => {
   try {
-    const noticias = await Noticia.find();
+    const noticias = await Noticia.find().sort({ data: -1 });
     res.status(200).json(noticias);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ mensagem: 'Erro ao buscar notícias' });
+    console.error('Erro ao buscar notícias:', err);
+    res.status(500).json({ mensagem: 'Erro ao buscar notícias.' });
   }
 });
 
-router.get('/noticias/:noticiaId', async (req, res) => {
-  const { noticiaId } = req.params;
-  if (!validarObjectId(noticiaId)) return res.status(400).json({ mensagem: 'ID de notícia inválido' });
-
+// Buscar uma notícia específica
+router.get('/noticias/:noticiaId', validarId('noticiaId'), async (req, res) => {
   try {
-    const noticia = await Noticia.findById(noticiaId);
-    if (!noticia) return res.status(404).json({ mensagem: 'Notícia não encontrada' });
+    const noticia = await Noticia.findById(req.params.noticiaId);
+    if (!noticia) return res.status(404).json({ mensagem: 'Notícia não encontrada.' });
     res.status(200).json(noticia);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ mensagem: 'Erro ao buscar notícia' });
+    console.error('Erro ao buscar notícia:', err);
+    res.status(500).json({ mensagem: 'Erro ao buscar notícia.' });
   }
 });
 
-router.get('/noticias/:noticiaId/comentarios', async (req, res) => {
-  const { noticiaId } = req.params;
-  if (!validarObjectId(noticiaId)) return res.status(400).json({ mensagem: 'ID de notícia inválido' });
-
+// Buscar comentários de uma notícia
+router.get('/noticias/:noticiaId/comentarios', validarId('noticiaId'), async (req, res) => {
   try {
-    const comentarios = await Comentario.find({ noticia: noticiaId });
+    const comentarios = await Comentario.find({ noticia: req.params.noticiaId }).sort({ createdAt: -1 });
     res.status(200).json(comentarios);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ mensagem: 'Erro ao buscar comentários' });
+    console.error('Erro ao buscar comentários:', err);
+    res.status(500).json({ mensagem: 'Erro ao buscar comentários.' });
   }
 });
 
-router.get('/noticias/:noticiaId/comentarios/:comentarioId', async (req, res) => {
-  const { comentarioId } = req.params;
-  if (!validarObjectId(comentarioId)) return res.status(400).json({ mensagem: 'ID de comentário inválido' });
-
+// Buscar um comentário específico
+router.get('/noticias/:noticiaId/comentarios/:comentarioId', validarId('comentarioId'), async (req, res) => {
   try {
-    const comentario = await Comentario.findById(comentarioId);
-    if (!comentario) return res.status(404).json({ mensagem: 'Comentário não encontrado' });
+    const comentario = await Comentario.findById(req.params.comentarioId);
+    if (!comentario) return res.status(404).json({ mensagem: 'Comentário não encontrado.' });
     res.status(200).json(comentario);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ mensagem: 'Erro ao buscar comentário' });
+    console.error('Erro ao buscar comentário:', err);
+    res.status(500).json({ mensagem: 'Erro ao buscar comentário.' });
   }
 });
 
-router.get('/noticias/:noticiaId/comentarios/:comentarioId/respostas', async (req, res) => {
-  const { comentarioId } = req.params;
-  if (!validarObjectId(comentarioId)) return res.status(400).json({ mensagem: 'ID de comentário inválido' });
-
+// Buscar respostas de um comentário
+router.get('/noticias/:noticiaId/comentarios/:comentarioId/respostas', validarId('comentarioId'), async (req, res) => {
   try {
-    const respostas = await Resposta.find({ comentario: comentarioId });
+    const respostas = await Resposta.find({ comentario: req.params.comentarioId }).sort({ createdAt: -1 });
     res.status(200).json(respostas);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ mensagem: 'Erro ao buscar respostas' });
+    console.error('Erro ao buscar respostas:', err);
+    res.status(500).json({ mensagem: 'Erro ao buscar respostas.' });
   }
 });
 
-router.get('/noticias/:noticiaId/comentarios/:comentarioId/respostas/:respostaId', async (req, res) => {
-  const { respostaId } = req.params;
-  if (!validarObjectId(respostaId)) return res.status(400).json({ mensagem: 'ID de resposta inválido' });
-
+// Buscar uma resposta específica
+router.get('/noticias/:noticiaId/comentarios/:comentarioId/respostas/:respostaId', validarId('respostaId'), async (req, res) => {
   try {
-    const resposta = await Resposta.findById(respostaId);
-    if (!resposta) return res.status(404).json({ mensagem: 'Resposta não encontrada' });
+    const resposta = await Resposta.findById(req.params.respostaId);
+    if (!resposta) return res.status(404).json({ mensagem: 'Resposta não encontrada.' });
     res.status(200).json(resposta);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ mensagem: 'Erro ao buscar resposta' });
+    console.error('Erro ao buscar resposta:', err);
+    res.status(500).json({ mensagem: 'Erro ao buscar resposta.' });
   }
 });
 

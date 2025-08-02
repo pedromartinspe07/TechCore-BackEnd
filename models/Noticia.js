@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+// Definição do schema da Notícia
 const NoticiaSchema = new mongoose.Schema({
   titulo: {
     type: String,
@@ -15,7 +16,10 @@ const NoticiaSchema = new mongoose.Schema({
   },
   categoria: {
     type: String,
-    enum: ['Hardware', 'Software', 'Geral', 'Opinião', 'Tutoriais', 'Reviews'],
+    enum: {
+      values: ['Hardware', 'Software', 'Geral', 'Opinião', 'Tutoriais', 'Reviews'],
+      message: 'Categoria inválida'
+    },
     default: 'Geral',
     trim: true
   },
@@ -23,7 +27,8 @@ const NoticiaSchema = new mongoose.Schema({
     type: String,
     trim: true,
     validate: {
-      validator: (v) => !v || /^https?:\/\/.+\.(jpg|jpeg|png|webp|gif)$/i.test(v),
+      validator: (url) =>
+        !url || /^https?:\/\/.+\.(jpg|jpeg|png|webp|gif)$/i.test(url),
       message: 'A URL da imagem de capa deve ser válida e terminar com uma extensão de imagem'
     }
   },
@@ -38,9 +43,12 @@ const NoticiaSchema = new mongoose.Schema({
     default: Date.now
   }
 }, {
-  timestamps: true // createdAt e updatedAt automáticos
+  timestamps: true, // adiciona createdAt e updatedAt automaticamente
+  collection: 'noticias' // nome explícito da coleção (opcional)
 });
 
+// Index para ordenar por data de publicação (mais recentes primeiro)
 NoticiaSchema.index({ data: -1 });
 
+// Exporta o modelo
 module.exports = mongoose.model('Noticia', NoticiaSchema);
