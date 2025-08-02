@@ -17,21 +17,21 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static('public')); // arquivos estáticos
+app.use(express.static('public')); // arquivos estáticos (HTML, CSS, JS, imagens, etc)
 
 // Prefixo das rotas da API
-app.use('/api', loginRoutes);
-app.use('/api', noticiasRoutes);
-app.use('/api', publicRoutes);
+app.use('/api/login', loginRoutes);
+app.use('/api/noticias', noticiasRoutes);
+app.use('/api/public', publicRoutes);
 
-// Rota base (verificação rápida)
+// Rota base
 app.get('/', (req, res) => {
   console.log('🌐 API TechCore ativa');
   res.status(200).send('🌐 API TechCore rodando com sucesso!');
 });
 
 // Middleware para rotas não encontradas
-app.use((req, res) => {
+app.use((req, res, next) => {
   res.status(404).json({ message: '❌ Rota não encontrada' });
 });
 
@@ -44,22 +44,23 @@ app.use((err, req, res, next) => {
 // Função principal para iniciar servidor
 async function startServer() {
   try {
-    // Conexão com o MongoDB
+    // Validação da URL do Mongo
     if (!process.env.MONGO_URL) {
       throw new Error('❌ URL do MongoDB (MONGO_URL) não definida no .env');
     }
 
+    // Conexão MongoDB
     await mongoose.connect(process.env.MONGO_URL, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
     console.log('✅ Conectado ao MongoDB com sucesso');
 
-    // Conexão com o Redis
+    // Conexão Redis
     await connectRedis();
     console.log('✅ Conectado ao Redis com sucesso');
 
-    // Inicializa o servidor
+    // Inicialização do servidor
     app.listen(PORT, () => {
       console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
     });
@@ -70,5 +71,5 @@ async function startServer() {
   }
 }
 
-// Inicia a aplicação
+// Inicializa a aplicação
 startServer();
