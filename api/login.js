@@ -3,7 +3,7 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
-// Simulando um banco de dados de usuários
+// Simulando banco de dados de usuários
 const users = [
   {
     id: 1,
@@ -32,7 +32,6 @@ const JWT_SECRET = process.env.JWT_SECRET || '04181818';
 router.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
-
     if (!username || !password) {
       return res.status(400).json({ message: 'Usuário e senha são obrigatórios.' });
     }
@@ -53,7 +52,7 @@ router.post('/login', async (req, res) => {
       { expiresIn: '1h' }
     );
 
-    res.json({ token });
+    res.json({ token, user: { id: user.id, username: user.username, role: user.role } });
   } catch (error) {
     console.error('Erro no login:', error);
     res.status(500).json({ message: 'Erro interno no servidor.' });

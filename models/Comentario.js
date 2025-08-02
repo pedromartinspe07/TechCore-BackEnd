@@ -1,5 +1,6 @@
-const mongoose = require('mongoose');
+const mongoose = require('mongoose'); // importa o mongoose
 
+// Schema para o modelo de Comentário
 const ComentarioSchema = new mongoose.Schema({
   autor: {
     type: String,
@@ -19,7 +20,8 @@ const ComentarioSchema = new mongoose.Schema({
     required: true
   }
 }, {
-  timestamps: true
+  timestamps: true // createdAt e updatedAt automáticos
 });
 
+// Exporta o modelo de Comentário
 module.exports = mongoose.model('Comentario', ComentarioSchema);

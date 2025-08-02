@@ -41,7 +41,6 @@ const NoticiaSchema = new mongoose.Schema({
   timestamps: true // createdAt e updatedAt automáticos
 });
 
-// Índice para ordenação eficiente por data (campo 'data')
 NoticiaSchema.index({ data: -1 });
 
 module.exports = mongoose.model('Noticia', NoticiaSchema);
