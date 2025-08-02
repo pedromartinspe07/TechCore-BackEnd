@@ -3,7 +3,7 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
-// Simulação de banco de dados (poderia ser substituído por MongoDB futuramente)
+// Simulação de banco de dados com senhas devidamente criptografadas
 const users = [
   {
     id: 1,
@@ -13,8 +13,8 @@ const users = [
     createdAt: new Date(),
     updatedAt: new Date(),
     status: 'active',
-    passwordHash: '$2b$10$3h0dYuCmzpIXnA4Q/EzOYOhYfsnHkaKx8nRPpp3Oa9xCF2aM4F0D2',
-    password: "123456"
+    // Hash de '123456'
+    passwordHash: '$2b$10$s7JkczTQ7k95NCcx49G.LuXYkXtVh8.A4SWW8yP9IEXURuHv1Zn8K',
   },
   {
     id: 2,
@@ -24,8 +24,8 @@ const users = [
     createdAt: new Date(),
     updatedAt: new Date(),
     status: 'active',
-    passwordHash: '$2b$10$3h0dYuCmzpIXnA4Q/EzOYOhYfsnHkaKx8nRPpp3Oa9xCF2aM4F0D2',
-    password: "123456"
+    // Hash de '123456'
+    passwordHash: '$2b$10$s7JkczTQ7k95NCcx49G.LuXYkXtVh8.A4SWW8yP9IEXURuHv1Zn8K',
   }
 ];
 
