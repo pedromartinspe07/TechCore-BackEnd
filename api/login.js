@@ -8,16 +8,32 @@ const users = [
   {
     id: 1,
     username: 'admin',
-    // A senha '1234' criptografada (bcrypt hash)
+    email: 'admin@gmail.com',
+    role: 'admin',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    status: 'active',
+    password: '051819pE@', //senha do usuário
+    passwordHash: '$2b$10$3h0dYuCmzpIXnA4Q/EzOYOhYfsnHkaKx8nRPpp3Oa9xCF2aM4F0D2' 
+  },
+  {
+    id: 2,
+    username: 'editor',
+    email: 'editor@gmail.com',
+    role: 'editor',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    status: 'active',
+    password: '051819pE@', //senha do usuário
     passwordHash: '$2b$10$3h0dYuCmzpIXnA4Q/EzOYOhYfsnHkaKx8nRPpp3Oa9xCF2aM4F0D2' 
   }
 ];
 
 // Segredo do JWT (deve vir do .env em produção)
-const JWT_SECRET = process.env.JWT_SECRET || 'segredo-super-seguro';
+const JWT_SECRET = process.env.JWT_SECRET || '04181818'; //segredo do JWT
 
 router.post('/login', async (req, res) => { //rota para fazer login
-  const { username, password } = req.body;
+  const { username, password } = req.body; //pega o username e password do body
 
   // Verifica se o usuário existe
   const user = users.find(u => u.username === username); //busca o usuário no banco de dados
