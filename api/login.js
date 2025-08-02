@@ -13,7 +13,8 @@ const users = [
     createdAt: new Date(),
     updatedAt: new Date(),
     status: 'active',
-    passwordHash: '$2b$10$3h0dYuCmzpIXnA4Q/EzOYOhYfsnHkaKx8nRPpp3Oa9xCF2aM4F0D2' // senha: "123456"
+    passwordHash: '$2b$10$3h0dYuCmzpIXnA4Q/EzOYOhYfsnHkaKx8nRPpp3Oa9xCF2aM4F0D2',
+    password: "123456"
   },
   {
     id: 2,
@@ -23,7 +24,8 @@ const users = [
     createdAt: new Date(),
     updatedAt: new Date(),
     status: 'active',
-    passwordHash: '$2b$10$3h0dYuCmzpIXnA4Q/EzOYOhYfsnHkaKx8nRPpp3Oa9xCF2aM4F0D2'
+    passwordHash: '$2b$10$3h0dYuCmzpIXnA4Q/EzOYOhYfsnHkaKx8nRPpp3Oa9xCF2aM4F0D2',
+    password: "123456"
   }
 ];
 
