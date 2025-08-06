@@ -2,8 +2,9 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const { body, validationResult } = require('express-validator');
 
-// Simulação de banco de dados com senhas devidamente criptografadas
+// Simulação de banco de dados (senhas já estão criptografadas)
 const users = [
   {
     id: 1,
@@ -13,8 +14,8 @@ const users = [
     createdAt: new Date(),
     updatedAt: new Date(),
     status: 'active',
-    // Hash de '123456'
-    passwordHash: '$2b$10$s7JkczTQ7k95NCcx49G.LuXYkXtVh8.A4SWW8yP9IEXURuHv1Zn8K',
+    // Senha: 123456
+    passwordHash: '$2b$10$s7JkczTQ7k95NCcx49G.LuXYkXtVh8.A4SWW8yP9IEXURuHv1Zn8K'
   },
   {
     id: 2,
@@ -24,15 +25,15 @@ const users = [
     createdAt: new Date(),
     updatedAt: new Date(),
     status: 'active',
-    // Hash de '123456'
-    passwordHash: '$2b$10$s7JkczTQ7k95NCcx49G.LuXYkXtVh8.A4SWW8yP9IEXURuHv1Zn8K',
+    // Senha: 123456
+    passwordHash: '$2b$10$s7JkczTQ7k95NCcx49G.LuXYkXtVh8.A4SWW8yP9IEXURuHv1Zn8K'
   }
 ];
 
 const JWT_SECRET = process.env.JWT_SECRET || '04181818';
 const JWT_EXPIRES_IN = '1h';
 
-// Função auxiliar para gerar token
+// Função auxiliar para gerar o token
 function gerarToken(usuario) {
   return jwt.sign(
     {
@@ -45,41 +46,52 @@ function gerarToken(usuario) {
   );
 }
 
-// Rota de login
-router.post('/login', async (req, res) => {
-  const { username, password } = req.body;
-
-  // Validação básica
-  if (!username || !password) {
-    return res.status(400).json({ message: 'Usuário e senha são obrigatórios.' });
-  }
-
-  try {
-    const usuario = users.find(u => u.username === username);
-    if (!usuario) {
-      return res.status(401).json({ message: 'Usuário ou senha inválidos.' });
+// Rota POST /login com validação e autenticação
+router.post(
+  '/login',
+  [
+    body('username').trim().isString().notEmpty().withMessage('Usuário é obrigatório.'),
+    body('password').trim().isString().notEmpty().withMessage('Senha é obrigatória.')
+  ],
+  async (req, res) => {
+    const erros = validationResult(req);
+    if (!erros.isEmpty()) {
+      return res.status(400).json({ message: 'Dados inválidos.', errors: erros.array() });
     }
 
-    const senhaCorreta = await bcrypt.compare(password, usuario.passwordHash);
-    if (!senhaCorreta) {
-      return res.status(401).json({ message: 'Usuário ou senha inválidos.' });
-    }
+    const { username, password } = req.body;
 
-    const token = gerarToken(usuario);
+    try {
+      // Comparar username ignorando maiúsculas/minúsculas (opcional)
+      const usuario = users.find(
+        (u) => u.username.toLowerCase() === username.toLowerCase()
+      );
 
-    return res.status(200).json({
-      token,
-      user: {
-        id: usuario.id,
-        username: usuario.username,
-        role: usuario.role
+      if (!usuario) {
+        return res.status(401).json({ message: 'Usuário ou senha inválidos.' });
       }
-    });
 
-  } catch (erro) {
-    console.error('Erro ao tentar fazer login:', erro);
-    return res.status(500).json({ message: 'Erro interno do servidor.' });
+      const senhaCorreta = await bcrypt.compare(password, usuario.passwordHash);
+      if (!senhaCorreta) {
+        return res.status(401).json({ message: 'Usuário ou senha inválidos.' });
+      }
+
+      const token = gerarToken(usuario);
+
+      return res.status(200).json({
+        token,
+        user: {
+          id: usuario.id,
+          username: usuario.username,
+          role: usuario.role
+        }
+      });
+
+    } catch (erro) {
+      console.error('Erro no login:', erro);
+      return res.status(500).json({ message: 'Erro interno do servidor.' });
+    }
   }
-});
+);
 
 module.exports = router;
