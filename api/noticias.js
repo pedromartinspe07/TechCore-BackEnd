@@ -3,21 +3,24 @@ const router = express.Router();
 const Noticia = require('../models/Noticia');
 const { redisClient } = require('../utils/redisClient');
 
-// Middleware opcional para lidar com cache genérico (reutilizável no futuro)
 async function getFromCacheOrFetch(key, fetchFunction, ttl = 600) {
-  const cached = await redisClient.get(key);
-  if (cached) {
-    console.log(`🔵 [CACHE HIT] ${key}`);
-    return JSON.parse(cached);
-  }
+  try {
+    const cached = await redisClient.get(key);
+    if (cached) {
+      console.log(`🔵 [CACHE HIT] ${key}`);
+      return JSON.parse(cached);
+    }
 
-  const data = await fetchFunction();
-  await redisClient.setEx(key, ttl, JSON.stringify(data));
-  console.log(`🟢 [CACHE MISS] ${key} - Dados armazenados no Redis`);
-  return data;
+    const data = await fetchFunction();
+    await redisClient.setEx(key, ttl, JSON.stringify(data));
+    console.log(`🟢 [CACHE MISS] ${key} - Dados armazenados no Redis`);
+    return data;
+  } catch (error) {
+    console.error(`❌ Erro no cache para ${key}:`, error);
+    throw error;
+  }
 }
 
-// Rota para buscar todas as notícias (com cache Redis)
 router.get('/noticias', async (req, res) => {
   const cacheKey = 'noticias:all';
 
@@ -26,9 +29,9 @@ router.get('/noticias', async (req, res) => {
       return await Noticia.find().sort({ data: -1 });
     });
 
-    return res.status(200).json(noticias);
+    return res.status(200).json(Array.isArray(noticias) ? noticias : []);
   } catch (error) {
-    console.error('❌ Erro ao buscar notícias:', error.message);
+    console.error('❌ Erro ao buscar notícias:', error);
     return res.status(500).json({ mensagem: 'Erro interno ao buscar notícias.' });
   }
 });
